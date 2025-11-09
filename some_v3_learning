@@ -1,0 +1,17 @@
+IUniswapV3Pool这个接口定义了uniswap v3流动池的只读性
+1.slot0() 返回池子的当前价格 ($\text{sqrtPriceX96}$)、当前 Tick 和其他状态信息。
+  在(uint160 sqrtPriceX96,,,,,,) = pool.slot0(); 这句使用“，”来省略它的返回值，因为我只要返回值里的池子当前的开平方根价格，通俗来讲就是兑换比
+2.ticks() 查询特定 Tick 索引上的流动性净变化net liquidity change。 tick是v3中离散化的价格点
+  v3中不是平滑的价格曲线 而是靠tick分成一个个区间 在一个区间内流动性是固定的 所谓流动性是池子中代币的深度 代币的价格不固定
+3.liquidity() 查询池子中持有的流动性数量
+4.observations() 获取历史价格数据
+
+IUniswapV3PoolActions 这个接口定义了池子的状态修改(State-Changing)功能，用于执行核心的金融操作。
+1.swap() 执行代币兑换
+  IUniswapV3PoolActions(address(pool)).swap(...)
+2.mint() 允许用户将头寸存入池子并铸造NFT流动性头存
+3.burn() 允许用户销毁NFT流动性头存并换回代币
+
+IUniswapV3SwapCallback 这是一个回调接口 
+V3 池子在计算出您应支付多少代币后，会立即调用此函数，要求您的合约执行 safeTransfer 将所需的输入代币支付给池子。
+1.uniswapV3SwapCallback(int256 amount0Delta, int256 amount1Delta, bytes calldata data)

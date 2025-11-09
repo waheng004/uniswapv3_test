@@ -37,10 +37,6 @@ contract UniswapV3SwapTest is Test, IUniswapV3SwapCallback {
         }
     }
 
-    // 您的 Sepolia 钱包地址 (替换为您自己的地址)
-    // 注意：Foundry 仍然会使用 vm.deal 分配资产，以确保测试环境清洁
-    address payable user = payable(0x74d2D4688d00e08f2426E94c395168aC0a4A5b95);
-
     // ----------------------------------------------------
     // 2. 环境设置 (setUp)
     // ----------------------------------------------------
