@@ -8,6 +8,7 @@ import {IUniswapV3PoolActions} from "v3-core/contracts/interfaces/pool/IUniswapV
 import {IUniswapV3SwapCallback} from "v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+
 contract UniswapV3SwapTest is Test, IUniswapV3SwapCallback {
     using SafeERC20 for IERC20;
 
@@ -24,11 +25,7 @@ contract UniswapV3SwapTest is Test, IUniswapV3SwapCallback {
     IUniswapV3Pool pool;
 
     // 实现回调接口
-    function uniswapV3SwapCallback(
-        int256 amount0Delta,
-        int256 amount1Delta,
-        bytes calldata
-    ) external override {
+    function uniswapV3SwapCallback(int256 amount0Delta, int256 amount1Delta, bytes calldata) external override {
         // 如果amount0Delta > 0，我们需要支付token0
         if (amount0Delta > 0) {
             IERC20(DAI_ADDRESS).safeTransfer(msg.sender, uint256(amount0Delta));
@@ -39,11 +36,11 @@ contract UniswapV3SwapTest is Test, IUniswapV3SwapCallback {
             IERC20(WETH_ADDRESS).safeTransfer(msg.sender, uint256(amount1Delta));
         }
     }
-    
+
     // 您的 Sepolia 钱包地址 (替换为您自己的地址)
     // 注意：Foundry 仍然会使用 vm.deal 分配资产，以确保测试环境清洁
-    address payable user = payable(0x74d2D4688d00e08f2426E94c395168aC0a4A5b95); 
-    
+    address payable user = payable(0x74d2D4688d00e08f2426E94c395168aC0a4A5b95);
+
     // ----------------------------------------------------
     // 2. 环境设置 (setUp)
     // ----------------------------------------------------
@@ -60,12 +57,12 @@ contract UniswapV3SwapTest is Test, IUniswapV3SwapCallback {
         // 分配 10 WETH (18位小数)
         deal(WETH_ADDRESS, address(this), 10 ether);
     }
-    
+
     // ----------------------------------------------------
     // 3. 测试逻辑 (testSwap)
     // ----------------------------------------------------
 
-    function testSwapDAIForWETH() public {
+    function testForkSwapDAIForWETH() public {
         // 卖出 1000 DAI (18位小数)
         uint256 amountIn = 1000 ether;
 
@@ -85,15 +82,16 @@ contract UniswapV3SwapTest is Test, IUniswapV3SwapCallback {
         // 使用当前价格的90%作为最小价格限制
         uint160 sqrtPriceLimitX96 = uint160((uint256(sqrtPriceX96) * 90) / 100);
 
-        (int256 amount0Delta, int256 amount1Delta) = IUniswapV3PoolActions(address(pool)).swap(
-            address(this),         // 接收代币的地址
-            zeroForOne,            // true: 卖出 Token 0 (DAI)
-            // casting to 'int256' is safe because amountIn is always positive
-            // forge-lint: disable-next-line(unsafe-typecast)
-            int256(amountIn),      // 卖出数量
-            sqrtPriceLimitX96,     // 价格限制
-            ""                     // data (为空)
-        );
+        (int256 amount0Delta, int256 amount1Delta) = IUniswapV3PoolActions(address(pool))
+            .swap(
+                address(this), // 接收代币的地址
+                zeroForOne, // true: 卖出 Token 0 (DAI)
+                // casting to 'int256' is safe because amountIn is always positive
+                // forge-lint: disable-next-line(unsafe-typecast)
+                int256(amountIn), // 卖出数量
+                sqrtPriceLimitX96, // 价格限制
+                "" // data (为空)
+            );
 
         // --- 验证结果 ---
 
